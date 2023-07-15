@@ -20,8 +20,17 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-/* === USER === */
 Route.post('users/register', 'AuthController.register')
 Route.post('users/login', 'AuthController.login')
 Route.get('user', 'AuthController.me').middleware(['auth'])
 Route.put('users', 'AuthController.update').middleware(['auth'])
+
+Route.resource('products', 'ProductsController')
+    .apiOnly()
+    .middleware({
+        create: ["auth"],
+        edit: ["auth"],
+        destroy: ["auth"],
+        store: ["auth"],
+        update: ["auth"]
+    })
