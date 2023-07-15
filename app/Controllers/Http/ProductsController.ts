@@ -1,12 +1,19 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Product from 'App/Models/Product'
 import StoreProductValidator from 'App/Validators/Products/StoreProductValidator'
 import UpdateProductValidator from 'App/Validators/Products/UpdateProductValidator'
 
 export default class ProductsController {
-    public async index({ response }: HttpContextContract) {
-        const products = await Product.all()
-        return response.ok(products)
+    public async index({ request, response }: HttpContextContract) {
+        const page = request.input('page', 1)
+        const limit = request.input('max', 10)
+
+        const products = await Database.from('products').paginate(page, limit)
+
+        products.baseUrl('/products')
+
+        return response.ok(products.toJSON())
     }
 
     public async store({ request, response }: HttpContextContract) {
