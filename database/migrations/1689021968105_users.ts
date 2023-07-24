@@ -1,4 +1,5 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
+import Roles from 'App/Enums/Roles'
 
 export default class extends BaseSchema {
   protected tableName = 'users'
@@ -8,6 +9,7 @@ export default class extends BaseSchema {
       table.increments('id').primary()
       table.string('username', 255).notNullable().unique()
       table.string('password', 180).notNullable()
+      table.integer('role').defaultTo(Roles.EMPTY)
       table.string('remember_me_token').nullable()
 
       /**

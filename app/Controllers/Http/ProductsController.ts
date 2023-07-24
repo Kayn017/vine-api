@@ -16,7 +16,9 @@ export default class ProductsController {
         return response.ok(products.toJSON())
     }
 
-    public async store({ request, response }: HttpContextContract) {
+    public async store({ request, response, bouncer }: HttpContextContract) {
+        await bouncer.with('ProductPolicy').authorize('create')
+
         const payload = await request.validate(StoreProductValidator)
         const product = await Product.create(payload)
 
@@ -28,8 +30,11 @@ export default class ProductsController {
         return response.ok(product)
     }
 
-    public async update ({ request, response, params }: HttpContextContract) {
+    public async update ({ request, response, params, bouncer }: HttpContextContract) {
         const product = await Product.findOrFail(params.id)
+
+        await bouncer.with('ProductPolicy').authorize('update')
+        
         const payload = await request.validate(UpdateProductValidator)
 
         product.merge(payload).save()
@@ -37,9 +42,13 @@ export default class ProductsController {
         return response.ok(product)
     }
 
-    public async destroy({ response, params }: HttpContextContract) {
+    public async destroy({ response, params, bouncer }: HttpContextContract) {
         const product = await Product.findOrFail(params.id)
+
+        await bouncer.with('ProductPolicy').authorize('delete')
+
         product.delete()
+
         return response.ok(product)
     }
 }
