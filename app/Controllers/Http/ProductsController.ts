@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Product from 'App/Models/Product'
+import ImportProductValidator from 'App/Validators/Products/ImportProductValidator'
 import StoreProductValidator from 'App/Validators/Products/StoreProductValidator'
 import UpdateProductValidator from 'App/Validators/Products/UpdateProductValidator'
 
@@ -34,7 +35,7 @@ export default class ProductsController {
         const product = await Product.findOrFail(params.id)
 
         await bouncer.with('ProductPolicy').authorize('update')
-        
+
         const payload = await request.validate(UpdateProductValidator)
 
         product.merge(payload).save()
@@ -51,4 +52,29 @@ export default class ProductsController {
 
         return response.ok(product)
     }
-}
+
+    public async importMany({ request, response, bouncer }: HttpContextContract) {
+      await bouncer.with('ProductPolicy').authorize('create')
+
+      let importedProducts: Product[] = [];
+      let updatedProducts: Product[] = [];
+
+      const payload = await request.validate(ImportProductValidator)
+
+      for(const data of payload.data) {
+        const existingProduct = await Product.findBy('product_link', data.productLink)
+
+        if(!existingProduct) {
+          importedProducts.push(await Product.create(data));
+        }
+        else {
+          updatedProducts.push(await existingProduct.merge(data).save());
+        }
+      }
+
+      return response.ok({
+        imported: importedProducts,
+        updated: updatedProducts
+      })
+    }
+  }

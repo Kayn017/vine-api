@@ -25,6 +25,7 @@ Route.post('users/login', 'AuthController.login')
 Route.get('user', 'AuthController.me').middleware(['auth'])
 Route.put('users', 'AuthController.update').middleware(['auth'])
 
+Route.post('products/import', 'ProductsController.importMany').middleware(["auth"])
 Route.resource('products', 'ProductsController')
     .apiOnly()
     .middleware({
